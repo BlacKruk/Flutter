@@ -1,0 +1,43 @@
+name: Version Bump
+
+on:
+  push:
+    branches:
+      - main  # Change this if your main branch is named differently
+    paths:
+      - pubspec.yaml  # Trigger only on changes to pubspec.yaml
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.0.0'  # Replace with your Flutter version
+
+      - name: Get current version
+        id: get_version
+        run: |
+          version=$(grep 'version:' pubspec.yaml | cut -d ' ' -f 2)
+          echo "::set-output name=version::$version"
+
+      - name: Bump version
+        run: |
+          echo "Bumping version from ${{ steps.get_version.outputs.version }} to ${{ steps.get_version.outputs.version | sed 's/[0-9]*$/0/' }}"
+          sed -i -E "s/version: [0-9]+\.[0-9]+\.[0-9]+/version: ${{ steps.get_version.outputs.version | sed 's/[0-9]*$/0/' }}/" pubspec.yaml
+
+      - name: Commit version bump
+        run: |
+          git config --local user.email "lagger543@gmail.com"  # Set your email
+          git config --local user.name "BlacKruk"  # Set your username
+          git add pubspec.yaml
+          git commit -m "Bump version to ${{ steps.get_version.outputs.version | sed 's/[0-9]*$/0/' }}" || echo "No changes to commit"
+
+      - name: Push changes
+        run: |
+          git push origin main  # Change this if your main branch is named differently
