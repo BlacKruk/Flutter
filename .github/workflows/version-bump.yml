@@ -1,3 +1,11 @@
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - pubspec.yaml
+  workflow_dispatch: # Allow manual triggering of the workflow
+
 name: Version Bump
 
 on:
@@ -23,7 +31,7 @@ jobs:
       - name: Get current version
         id: get_version
         run: |
-          version=$(grep 'version:' pubspec.yaml | cut -d ' ' -f 2)
+          version=$(grep 'version:3.24.3' pubspec.yaml | cut -d ' ' -f 2)
           echo "::set-output name=version::$version"
 
       - name: Bump version
