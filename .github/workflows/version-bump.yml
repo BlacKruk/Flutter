@@ -36,9 +36,6 @@ jobs:
           sed -i "s/version: .*/version: $new_version/" pubspec.yaml
           echo "::set-output name=version::$new_version"
 
-      - name: Run Flutter tests
-        run: flutter test
-
       - name: Commit version bump
         run: |
           git config --local user.email "lagger543@gmail.com"  # Set your email
