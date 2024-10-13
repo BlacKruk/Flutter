@@ -13,24 +13,38 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Cache Flutter packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-cache-
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.0.0'  # Replace with your Flutter version
 
-      - name: Extract version from pubspec.yaml
-        id: get_version
+      - name: Bump version
+        id: bump_version
         run: |
-          VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //')
-          echo "Version: $VERSION"
-          echo "::set-output name=version::$VERSION"
+          current_version=$(grep 'version:' pubspec.yaml | sed 's/version: //')
+          IFS="." read -r major minor patch <<< "$current_version"
+          new_patch=$((patch + 1))
+          new_version="$major.$minor.$new_patch"
+          sed -i "s/version: .*/version: $new_version/" pubspec.yaml
+          echo "::set-output name=version::$new_version"
+
+      - name: Run Flutter tests
+        run: flutter test
 
       - name: Commit version bump
         run: |
           git config --local user.email "lagger543@gmail.com"  # Set your email
           git config --local user.name "BlacKruk"  # Set your username
           git add pubspec.yaml
-          git commit -m "Bump version to ${{ steps.get_version.outputs.version }}" || echo "No changes to commit"
+          git commit -m "Bump version to ${{ steps.bump_version.outputs.version }}" || echo "No changes to commit"
 
       - name: Push changes
         run: |
