@@ -6,20 +6,15 @@ on:
       - pubspec.yaml
   workflow_dispatch: # Allow manual triggering of the workflow
 
+permissions:
+  contents: write  # Allow the GitHub Actions bot to write to the repository
+
 jobs:
   bump:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Cache Flutter packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-cache-
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -45,6 +40,4 @@ jobs:
 
       - name: Push changes
         run: |
-          git push origin master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Using the default GitHub token
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/BlacKruk/Flutter.git master
